@@ -1,0 +1,29 @@
+{
+  "name": "scoped-effection",
+  "version": "1.0.0",
+  "description": "A prototype of effection with scopes and tasks as the two primitives",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cowboyd/scoped-effection.git"
+  },
+  "keywords": [
+    "concurrency",
+    "effects",
+    "algebraic-effects",
+    "async"
+  ],
+  "author": "Charles Lowell <cowboyd@frontside.io>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cowboyd/scoped-effection/issues"
+  },
+  "homepage": "https://github.com/cowboyd/scoped-effection#readme",
+  "devDependencies": {
+    "@frontside/typescript": "^1.1.1",
+    "typescript": "^4.2.4"
+  }
+}
