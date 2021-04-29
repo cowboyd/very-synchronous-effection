@@ -4,7 +4,7 @@
   "description": "A prototype of effection with scopes and tasks as the two primitives",
   "main": "dist/index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha -r ts-node/register test/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,10 @@
   "homepage": "https://github.com/cowboyd/scoped-effection#readme",
   "devDependencies": {
     "@frontside/typescript": "^1.1.1",
+    "@types/mocha": "^8.2.2",
+    "expect": "^26.6.2",
+    "mocha": "^8.3.2",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   }
 }
