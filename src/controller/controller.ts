@@ -1,4 +1,4 @@
-import { Children } from '../tree';
+import { Children } from '../call-frame';
 import { Operation, Scope } from '../api';
 import { createPromiseController } from './promise-controller';
 import { createIteratorController } from './iterator-controller';

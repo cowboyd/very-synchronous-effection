@@ -1,7 +1,7 @@
 import { Controller } from './controller';
 import { Operation, OperationIterator } from "../api";
 import { chain, Task } from '../task';
-import { createTree, Children } from '../tree';
+import { createCallFrame, Children } from '../call-frame';
 import { catchHalt } from '../catch-halt';
 
 type Continuation<T> = () => IteratorResult<Operation<unknown>, T>;
@@ -24,7 +24,7 @@ export function createIteratorController<T>(iterator: OperationIterator<T>, chil
   }
 
   function step(operation: Operation<unknown>) {
-    let child = createTree(operation, children);
+    let child = createCallFrame(operation, children);
 
     return chain(child.task, getValue => {
       if (interrupted) {

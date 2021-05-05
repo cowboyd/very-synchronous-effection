@@ -73,4 +73,13 @@ This to note:
 3. Controllers seem much simpler.
 
 
+## Development
+
+This project uses `npm`, although it might work with yarn.
+
+``` shell
+> npm install
+> npm test
+```
+
 [2]: https://github.com/thefrontside/effection/blob/00562fdac1153ad7a17533eb95ab0e8081bf09fb/packages/core/src/controller/iterator-controller.ts#L33-L50

@@ -5,9 +5,9 @@ import { catchHalt } from './catch-halt';
 import { createController } from './controller';
 import { createCallback } from './callback';
 
-export type Children = Set<Tree>;
+export type Children = Set<CallFrame>;
 
-export interface Tree<T = any> {
+export interface CallFrame<T = any> {
   id: number;
   task: Task<T>;
   scope: Scope;
@@ -17,7 +17,7 @@ export interface Tree<T = any> {
 
 let ids = 1;
 
-export function createTree<T>(operation: Operation<T>, siblings: Set<Tree<any>>): Tree<T> {
+export function createCallFrame<T>(operation: Operation<T>, siblings: Children): CallFrame<T> {
   let children: Children = new Set();
 
   let { start, stop, interrupt } = createController(operation, children);
@@ -53,13 +53,13 @@ export function createTree<T>(operation: Operation<T>, siblings: Set<Tree<any>>)
 
   function spawn<R>(operation: Operation<R>): Operation<Task<R>> {
     return () => {
-      let child = createTree<R>(operation, children);
+      let child = createCallFrame<R>(operation, children);
 
       return Task.resolve(child.task);
     }
   }
 
-  let tree: Tree<T> = {
+  let tree: CallFrame<T> = {
     id: ids++,
     operation,
     children,

@@ -1,6 +1,6 @@
 import { OperationFn, Scope } from '../api';
 import { Task } from '../task';
-import { Children } from '../tree';
+import { Children } from '../call-frame';
 import { Controller, createController } from './controller';
 
 export function createFunctionController<T>(fn: OperationFn<T>, children: Children): Controller<T> {
