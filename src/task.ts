@@ -10,7 +10,13 @@ export type Reject = (error: Error) => void;
 export type Consumer<In, Out> = (get: () => In) => Out;
 export type Continuation<T> = { resolve: Resolve<T>, reject: Reject };
 
-export function createTask<T>(): [Task<T>, Resolve<T>, Reject] {
+export interface NewTask<T> {
+  task: Task<T>;
+  resolve: Resolve<T>;
+  reject: Reject;
+}
+
+export function createTask<T>(): NewTask<T> {
   let settled: Result<T>;
   let deferred = createDeferred<T>()
   let consumers: Set<(result: Result<T>) => void> = new Set();
@@ -36,8 +42,7 @@ export function createTask<T>(): [Task<T>, Resolve<T>, Reject] {
   }
 
   function consume<R>(callback: Consumer<T,R>): Task<R> {
-    let [next, resolve, reject] = createTask<R>();
-
+    let { task: next, resolve, reject } = createTask<R>();
     consumers.add((result) => {
       try {
         resolve(callback(() => {
@@ -61,19 +66,7 @@ export function createTask<T>(): [Task<T>, Resolve<T>, Reject] {
 
   function halt(): Task<void> {
     produce({ type: 'halted', error: new HaltError() });
-    return catchHalt();
-  }
-
-  function catchHalt(): Task<void> {
-    return consume(getValue => {
-      try {
-        getValue();
-      } catch (error) {
-        if (error !instanceof HaltError) {
-          throw error;
-        }
-      }
-    });
+    return consume(() => {});
   }
 
   function resolve(value: T) {
@@ -84,36 +77,46 @@ export function createTask<T>(): [Task<T>, Resolve<T>, Reject] {
     produce({ type: "rejected", error })
   }
 
+  let promise = deferred.promise;
+
   let task: Task<T> = {
     consume,
     halt,
-    then: deferred.promise.then,
-    catch: deferred.promise.catch,
-    finally: deferred.promise.finally,
+    then: promise.then.bind(promise),
+    catch: promise.catch.bind(promise),
+    finally: promise.finally.bind(promise),
     [Symbol.toStringTag]: `[object Task]`
   }
-  return [ task, resolve, reject] ;
+  return { task, resolve, reject };
 }
 
-export const Task = {
-  halt(): Task<void> {
-    let [task] = createTask<void>();
-    return task.halt();
+interface TaskStatic {
+  halt<T>(): Task<T>;
+  resolve<T>(value: T): Task<T>;
+  resolve<_T extends undefined>(value: void): Task<void>;
+  reject<T>(error: Error): Task<T>;
+}
+
+export const Task: TaskStatic = {
+  halt<T>(): Task<T> {
+    let { task } = createTask<T>();
+    task.halt();
+    return task;
   },
   resolve<T>(value: T): Task<T> {
-    let [task, resolve] = createTask<T>();
+    let { task, resolve } = createTask<T>();
     resolve(value);
     return task;
   },
   reject<T>(error: Error) {
-    let [task, , reject] = createTask<T>();
+    let { task, reject } = createTask<T>();
     reject(error);
     return task;
   }
 }
 
 export function chain<T,R>(task: Task<T>, fn: Consumer<T,Task<R>>): Task<R> {
-  let [chained, resolve, reject] = createTask<R>();
+  let { task: chained, resolve, reject } = createTask<R>();
   task.consume(getValue => {
     try {
       let next = fn(getValue);
@@ -128,14 +131,12 @@ export function chain<T,R>(task: Task<T>, fn: Consumer<T,Task<R>>): Task<R> {
       reject(error);
     }
   });
-
   return {
     ...chained,
     halt() {
-      task.halt();
-      return chained.halt();
+      return chain(task.halt(), () => chained.halt());
     }
-  };
+  }
 }
 
 export function isTask<T>(value: object | undefined): value is Task<T> {

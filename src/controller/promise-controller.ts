@@ -1,8 +1,19 @@
+import { createTask } from '../task';
 import { Controller } from './controller';
 
 export function createPromiseController<T>(promise: Promise<T>): Controller<T> {
-  return function start(tree) {
-    let { resolve, reject } = tree;
-    promise.then(resolve, reject);
+  let result = createTask<T>();
+
+  function start() {
+    promise.then(result.resolve, result.reject);
+    return result.task;
   }
+
+  function stop() {
+    return result.task.halt();
+  }
+
+  function interrupt() {}
+
+  return { start, stop, interrupt }
 }
