@@ -26,13 +26,20 @@ export function createTree<T>(operation: Operation<T>, siblings: Set<Tree<any>>)
 
   let shutdown = createCallback(() => {
     interrupt();
-    return chain(haltChildren(children), getValue => {
-      getValue();
+    return chain(haltChildren(children), assertCleanShutdown => {
+      assertCleanShutdown();
       return stop();
     })
   });
 
-  let compute = createCallback(() => chain(start(scope), getValue => chain(shutdown(), () => Task.resolve(getValue()))));
+  // this is the main computation sequence. The shutdown sequence is inserted in between
+  // when the value is obtained from the controller, and when it is transmitted
+  // to the exit point of this call frame. That way, shutdown is _guaranteed_ to have
+  // completed successful before the value is ever available to the caller
+  let compute = createCallback(() => chain(start(scope), getValue => chain(shutdown(), assertCleanShutdown => {
+    assertCleanShutdown();
+    return Task.resolve(getValue())
+  })));
 
   let { task: returnValue, resolve, reject } = createTask<T>();
 
@@ -47,6 +54,7 @@ export function createTree<T>(operation: Operation<T>, siblings: Set<Tree<any>>)
   function spawn<R>(operation: Operation<R>): Operation<Task<R>> {
     return () => {
       let child = createTree<R>(operation, children);
+
       return Task.resolve(child.task);
     }
   }
@@ -79,8 +87,8 @@ function haltChildren(children: Children): Task<void> {
     .reduce((current, child) => chain(current.consume(catchHalt), assertSuccess => {
 
       // There is no "value" associated with halt,
-      // but if the previous halt failed, this will
-      // propagate the error
+      // but if the previous halt raised a non halt related error, this will
+      // propagate it
       assertSuccess();
 
       return child.task.halt().consume(catchHalt).consume(getValue => {

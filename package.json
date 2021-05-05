@@ -1,7 +1,7 @@
 {
-  "name": "scoped-effection",
+  "name": "very-synchronous-effection",
   "version": "1.0.0",
-  "description": "A prototype of effection with scopes and tasks as the two primitives",
+  "description": "A prototype of effection using explicit synchronous primitives",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha -r ts-node/register test/**/*.test.ts"

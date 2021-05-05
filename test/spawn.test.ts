@@ -4,7 +4,7 @@ import expect from 'expect';
 
 import { run, sleep, Task } from '../src/index';
 
-describe.only('spawn', () => {
+describe('spawn', () => {
   it('can spawn a new child task', async () => {
     let root = run(function*(scope) {
       let child: Task<number> = yield scope.spawn(function*() {
@@ -16,6 +16,7 @@ describe.only('spawn', () => {
 
       return yield child;
     });
+
     await expect(root).resolves.toEqual(67);
   });
 
@@ -73,8 +74,8 @@ describe.only('spawn', () => {
       yield;
     });
 
-    await expect(root).rejects.toEqual(error);
     await expect(child).rejects.toEqual(error);
+    await expect(root).rejects.toEqual(error);
   });
 
   it('finishes normally when child halts', async () => {
@@ -90,10 +91,9 @@ describe.only('spawn', () => {
     await expect(child).rejects.toHaveProperty('name', 'HaltError');
   });
 
-  it.skip('rejects when child errors during completing', async () => {
-    let child;
+  it('rejects when child errors during completing', async () => {
     let root = run(function*(context) {
-      child = yield context.spawn(function*() {
+      yield context.spawn(function*() {
         try {
           yield
         } finally {
@@ -104,7 +104,6 @@ describe.only('spawn', () => {
     });
 
     await expect(root).rejects.toHaveProperty('message', 'moo');
-    await expect(child).rejects.toHaveProperty('message', 'moo');
   });
 
   it('rejects when child errors during halting', async () => {

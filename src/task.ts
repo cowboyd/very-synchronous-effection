@@ -8,7 +8,6 @@ export interface Task<T = unknown> extends Promise<T> {
 export type Resolve<T> = (value: T) => void;
 export type Reject = (error: Error) => void;
 export type Consumer<In, Out> = (get: () => In) => Out;
-export type Continuation<T> = { resolve: Resolve<T>, reject: Reject };
 
 export interface NewTask<T> {
   task: Task<T>;

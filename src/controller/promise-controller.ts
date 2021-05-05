@@ -2,15 +2,15 @@ import { createTask } from '../task';
 import { Controller } from './controller';
 
 export function createPromiseController<T>(promise: Promise<T>): Controller<T> {
-  let result = createTask<T>();
+  let { task, resolve, reject } = createTask<T>();
 
   function start() {
-    promise.then(result.resolve, result.reject);
-    return result.task;
+    promise.then(resolve, reject);
+    return task;
   }
 
   function stop() {
-    return result.task.halt();
+    return task.halt();
   }
 
   function interrupt() {}
