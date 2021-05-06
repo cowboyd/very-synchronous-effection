@@ -23,20 +23,21 @@ continuing computations synchronously. To do this, you can consume it
 synchronously:
 
 ```js
-Task.resolve(5).consume(getValue => console.log('value = ', value));
+Task.resolve(5).consume(getValue => console.log('value = ', getValue()));
 ```
 
 The above code will execute completely synchronously.
 
 What's nice about this is that errors are neither allowed to escape
-from a task, nor able to disappear without explicitly doing so. It
-does this by forcing the caller to "unbox" the current value, do
-something with it, and then the return is placed back into a box.
+from a task, nor able to disappear without explicitly handling
+them. It does this by forcing the caller to "unbox" the current value, do
+something with it, and then the return is placed back into a box. That
+box could contain an error.
 
-```
+```js
 let bomb = Task.resolve(20).consume(() => { throw new Error()});
 
-// this task know holds an error that will be thrown if you try and
+// this task holds an error that will be thrown if you try and
 // access it
 
 bomb.consume(getValue => {
